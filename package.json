@@ -1,0 +1,12 @@
+{
+  "name": "mc-launcher",
+  "version": "1.0.0",
+  "description": "最精简的 Minecraft 启动器",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "dependencies": {
+    "electron": "^28.0.0"
+  }
+}

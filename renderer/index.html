@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Minecraft Launcher</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- Root window with rounded corners -->
+<div class="window" id="windowRoot">
+
+  <!-- Custom title bar -->
+  <div class="titlebar" id="titlebar">
+    <div class="tb-left">
+      <svg class="tb-logo" viewBox="0 0 24 24"><rect x="2" y="2" width="8" height="8" rx="2" fill="currentColor"/><rect x="14" y="2" width="8" height="8" rx="2" fill="currentColor"/><rect x="2" y="14" width="8" height="8" rx="2" fill="currentColor"/><rect x="14" y="14" width="8" height="8" rx="2" fill="currentColor"/></svg>
+      <span class="tb-title">Minecraft Launcher</span>
+    </div>
+    <div class="tb-center"></div>
+    <div class="tb-controls">
+      <button class="tb-btn tb-min" id="btnMin" title="最小化">
+        <svg viewBox="0 0 12 12"><rect x="2" y="5.5" width="8" height="1" fill="currentColor"/></svg>
+      </button>
+      <button class="tb-btn tb-max" id="btnMax" title="最大化">
+        <svg viewBox="0 0 12 12"><rect x="2" y="2" width="8" height="8" rx="0.5" fill="none" stroke="currentColor" stroke-width="1"/></svg>
+      </button>
+      <button class="tb-btn tb-close" id="btnClose" title="关闭">
+        <svg viewBox="0 0 12 12"><path d="M2 2l8 8M10 2l-8 8" stroke="currentColor" stroke-width="1.2"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Body: sidebar + content -->
+  <div class="body">
+    <!-- Sidebar -->
+    <nav class="sidebar">
+      <div class="sb-tabs">
+        <button class="sb-tab active" data-tab="home">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 12l9-7 9 7"/><rect x="5" y="10" width="14" height="11" rx="1"/></svg>
+          <span>首页</span>
+        </button>
+        <button class="sb-tab" data-tab="versions">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+          <span>版本</span>
+        </button>
+        <button class="sb-tab" data-tab="accounts">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 4-7 8-7s8 3 8 7"/></svg>
+          <span>账号</span>
+        </button>
+      </div>
+      <div class="sb-bottom">
+        <button class="sb-tab" data-tab="settings">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="3"/><path d="M12 1v2m0 18v2M4.22 4.22l1.42 1.42m12.72 12.72l1.42 1.42M1 12h2m18 0h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+          <span>设置</span>
+        </button>
+      </div>
+    </nav>
+
+    <!-- Tab panels -->
+    <main class="content">
+
+      <!-- ======== HOME ======== -->
+      <div class="tab-panel active" id="panel-home">
+        <div class="home-hero">
+          <div class="home-badge" id="homeBadge">LAUNCHER</div>
+          <h1 class="home-headline">开始你的<br>Minecraft 冒险</h1>
+          <p class="home-tagline" id="homeTagline">选择一个版本，即刻启程</p>
+
+          <!-- Quick version picker -->
+          <div class="home-picker">
+            <div class="picker-row">
+              <div class="picker-select" id="pickerVersion" tabindex="0">
+                <span id="pickerVerText">选择版本</span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+              </div>
+              <div class="picker-dropdown" id="pickerDropdown"></div>
+            </div>
+          </div>
+
+          <button class="btn-launch" id="btnLaunch" disabled>
+            <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="6,3 20,12 6,21"/></svg>
+            <span>启动游戏</span>
+          </button>
+
+          <div class="home-status" id="homeStatus">
+            <span class="status-dot" id="statusDot"></span>
+            <span id="homeStatusText">就绪</span>
+          </div>
+        </div>
+        <div class="home-glow"></div>
+      </div>
+
+      <!-- ======== VERSIONS ======== -->
+      <div class="tab-panel" id="panel-versions">
+        <div class="panel-header">
+          <div>
+            <h2 class="panel-title">版本列表</h2>
+            <p class="panel-sub" id="verCount">—</p>
+          </div>
+          <div class="panel-actions">
+            <div class="search-box">
+              <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input type="text" class="search-input" id="searchInput" placeholder="搜索版本..." autocomplete="off">
+            </div>
+            <button class="btn-icon" id="btnRefreshVersions" title="刷新远程版本">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+            </button>
+            <button class="btn-icon" id="btnScanLocal" title="扫描本地版本">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+            </button>
+          </div>
+        </div>
+        <div class="version-grid" id="versionList">
+          <div class="shimmer-grid">
+            <div class="shimmer-card"></div><div class="shimmer-card"></div><div class="shimmer-card"></div>
+            <div class="shimmer-card"></div><div class="shimmer-card"></div><div class="shimmer-card"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ======== ACCOUNTS ======== -->
+      <div class="tab-panel" id="panel-accounts">
+        <div class="panel-header">
+          <div>
+            <h2 class="panel-title">账号管理</h2>
+            <p class="panel-sub">支持微软账号与离线模式</p>
+          </div>
+        </div>
+        <div class="account-grid" id="accountGrid">
+          <div class="account-empty" id="accountEmpty">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 4-7 8-7s8 3 8 7"/></svg>
+            <span>暂无账号</span>
+          </div>
+        </div>
+        <div class="account-btns">
+          <button class="btn-login ms" id="btnMSLogin">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M2 3h9v9H2V3zm11 0h9v9h-9V3zM2 14h9v9H2v-9zm11 0h9v9h-9v-9z"/></svg>
+            微软登录
+          </button>
+          <button class="btn-login offline" id="btnOfflineLogin">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="10" r="3"/><path d="M12 13v8M8 21h8"/></svg>
+            离线登录
+          </button>
+        </div>
+      </div>
+
+      <!-- ======== SETTINGS ======== -->
+      <div class="tab-panel" id="panel-settings">
+        <div class="panel-header">
+          <div>
+            <h2 class="panel-title">启动设置</h2>
+            <p class="panel-sub">配置 Java 与游戏参数</p>
+          </div>
+        </div>
+        <div class="settings-form">
+          <div class="form-group">
+            <label class="form-label">Java 可执行文件</label>
+            <div class="form-path-row">
+              <span class="path-val" id="javaPath">java</span>
+              <button class="btn-sm" id="btnJavaSelect">浏览</button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">游戏目录</label>
+            <div class="form-path-row">
+              <span class="path-val" id="gameDir">—</span>
+              <button class="btn-sm" id="btnGameDirSelect">浏览</button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">内存分配</label>
+            <div class="mem-row">
+              <input type="range" class="mem-slider" id="memorySlider" min="512" max="16384" step="512" value="2048">
+              <input type="number" class="mem-input" id="memoryInput" min="512" step="512" value="2048">
+              <span class="mem-unit">MB</span>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">版本隔离</label>
+            <div class="toggle-row">
+              <span class="toggle-label">各版本使用独立游戏目录</span>
+              <label class="toggle-switch">
+                <input type="checkbox" id="isoToggle">
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+          </div>
+          <button class="btn-save" id="btnSettingsSave">保存设置</button>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Footer bar -->
+  <div class="footer">
+    <div class="progress-bar-wrapper">
+      <div class="progress-track">
+        <div class="progress-fill" id="progressFill">
+          <div class="progress-glow"></div>
+        </div>
+      </div>
+      <span class="progress-label" id="statusText">就绪</span>
+    </div>
+    <div class="footer-right">
+      <span class="footer-badge" id="footerVer">—</span>
+      <span class="footer-badge" id="footerMem">2048 MB</span>
+    </div>
+  </div>
+</div>
+
+<!-- ========== MODALS ========== -->
+
+<!-- Settings saved toast -->
+<div class="toast" id="toast">设置已保存</div>
+
+<!-- Offline login -->
+<div class="modal-overlay" id="offlineOverlay">
+  <div class="modal-card">
+    <h3>离线登录</h3>
+    <input type="text" class="form-input" id="offlineNameInput" placeholder="输入玩家名称" autocomplete="off">
+    <div class="modal-btns">
+      <button class="btn-sm ghost" id="btnOfflineCancel">取消</button>
+      <button class="btn-sm primary" id="btnOfflineConfirm">确定</button>
+    </div>
+  </div>
+</div>
+
+<!-- MS login -->
+<div class="modal-overlay" id="msOverlay">
+  <div class="modal-card">
+    <h3>微软登录</h3>
+    <p class="ms-hint" id="msStatus" style="padding:20px 0">正在打开浏览器进行授权...</p>
+    <div class="ms-steps" id="msSteps">
+      <span class="ms-step active">1</span><span class="ms-line"></span>
+      <span class="ms-step">2</span><span class="ms-line"></span>
+      <span class="ms-step">3</span>
+    </div>
+    <div class="modal-btns">
+      <button class="btn-sm ghost" id="btnMSCancel">取消</button>
+    </div>
+  </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
