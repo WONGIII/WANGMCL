@@ -1,6 +1,6 @@
 # WANG Minecraft Launcher
 
-Minecraft 启动器，Electron + 原生 JS，Apple 风格界面。
+Minecraft 启动器，Electron + 原生 JS。
 
 ## 功能
 
@@ -28,7 +28,7 @@ ml/
 ├── preload.js            # 安全桥接
 └── renderer/
     ├── index.html        # 界面结构
-    ├── style.css         # Apple Design System 样式
+    ├── style.css         # Design 样式
     └── app.js            # 前端逻辑
 ```
 
@@ -38,7 +38,6 @@ ml/
 |---|---|
 | 框架 | Electron 28 |
 | 前端 | 原生 HTML/CSS/JS（无框架） |
-| 设计 | Apple Design System（DESIGN.md） |
 | 下载源 | BMCLAPI 优先，Mojang 官方兜底 |
 | 认证 | Microsoft OAuth2 PKCE + Xbox Live + Minecraft |
 
