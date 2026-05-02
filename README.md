@@ -1,6 +1,6 @@
 # WANG Minecraft Launcher
 
-最精简的 Minecraft 启动器，Electron + 原生 JS，Apple 风格界面。
+Minecraft 启动器，Electron + 原生 JS，Apple 风格界面。
 
 ## 功能
 
