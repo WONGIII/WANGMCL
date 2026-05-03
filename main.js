@@ -10,16 +10,22 @@ const defaultSettings = {
   javaPath: 'java',
   memory: 2048,
   gameDir: path.join(app.getPath('userData'), '.minecraft'),
-  versionIsolation: false
+  versionIsolation: false,
+  downloadSource: 'bmclapi'
 };
 
 function loadData() {
   try {
     const d = JSON.parse(fs.readFileSync(DATA_FILE, 'utf8'));
-    d.settings = { ...defaultSettings, ...d.settings };
+    // Merge: only override defaults with non-nullish saved values
+    const saved = d.settings || {};
+    d.settings = { ...defaultSettings };
+    for (const [k, v] of Object.entries(saved)) {
+      if (v != null) d.settings[k] = v;
+    }
     return d;
   } catch {
-    return { accounts: [], settings: defaultSettings };
+    return { accounts: [], settings: { ...defaultSettings } };
   }
 }
 
@@ -98,7 +104,7 @@ ipcMain.handle('removeAccount', (_, uuid) => {
 });
 
 // Versions
-ipcMain.handle('getVersions', () => getVersionList());
+ipcMain.handle('getVersions', () => getVersionList(data.settings.downloadSource));
 
 ipcMain.handle('getLocalVersions', () => scanLocalVersions(data.settings.gameDir));
 
@@ -109,12 +115,15 @@ ipcMain.handle('scanGameDir', () => {
 
 // Download
 ipcMain.handle('downloadVersion', async (_, verId) => {
-  for await (const ev of downloadVersion(verId, data.settings.gameDir))
+  const source = data.settings.downloadSource || 'bmclapi';
+  for await (const ev of downloadVersion(verId, data.settings.gameDir, source))
     win.webContents.send('downloadProgress', ev);
   return 'done';
 });
 
 // Launch
 ipcMain.handle('launch', async (_, account, verId) => {
+  console.log('launch args:', { verId, gameDir: data.settings.gameDir, javaPath: data.settings.javaPath, memory: data.settings.memory, versionIsolation: data.settings.versionIsolation });
+  if (!data.settings.gameDir) throw new Error('游戏目录未设置，请先在设置中选择游戏目录');
   await launchGame(verId, data.settings.gameDir, data.settings.javaPath, data.settings.memory, account, data.settings.versionIsolation);
 });

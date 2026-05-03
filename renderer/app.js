@@ -103,7 +103,11 @@ $('#btnLaunch').addEventListener('click', async () => {
   $('#homeStatusText').textContent = '下载中...';
 
   try {
-    await api.downloadVersion(state.selectedVer);
+    // Check if version is already installed locally
+    const isLocal = state.localVersions.some(v => v.id === state.selectedVer && v.hasJar);
+    if (!isLocal) {
+      await api.downloadVersion(state.selectedVer);
+    }
     dot.classList.remove('downloading');
     dot.classList.add('active');
     $('#homeStatusText').textContent = '启动中...';
@@ -167,55 +171,64 @@ function versionTypeTagClass(type) {
   return '';
 }
 
+function buildVerCard(v, i) {
+  const sel = v.id === state.selectedVer ? ' selected' : '';
+  return `<div class="ver-card${sel}" data-id="${v.id}" data-type="${v.type}" style="animation: cardIn 0.4s ${i*0.015}s var(--ease-smooth) both">
+    <div class="ver-id">${v.id}</div>
+    <div class="ver-meta">
+      <span class="ver-type">${versionTypeLabel(v.type)}</span>
+      ${v.local ? '<span class="ver-tag local">本地</span>' : ''}
+    </div>
+  </div>`;
+}
+
 function renderVersions(filter = '') {
   const grid = $('#versionList');
+  const q = (filter || '').toLowerCase();
 
-  // Build combined list: local first, then remote (dedup by id)
-  const seen = new Set();
-  let list = [];
-
-  for (const v of (state.localVersions || [])) {
-    if (!seen.has(v.id)) {
-      seen.add(v.id);
-      list.push({ ...v, _local: true });
-    }
+  // Local versions
+  let locals = (state.localVersions || []).filter(v => !q || v.id.toLowerCase().includes(q));
+  // Remote releases (dedup against locals)
+  const localIds = new Set(locals.map(v => v.id));
+  let remotes = state.versions.filter(v => {
+    if (localIds.has(v.id)) return false;
+    if (v.type !== 'release') return false;
+    if (q && !v.id.toLowerCase().includes(q)) return false;
+    return true;
+  });
+  // Also include snapshots when filtering
+  if (q) {
+    const snaps = state.versions.filter(v => {
+      if (localIds.has(v.id)) return false;
+      if (v.type !== 'snapshot') return false;
+      return v.id.toLowerCase().includes(q);
+    });
+    remotes = [...remotes, ...snaps];
   }
 
-  for (const v of state.versions) {
-    if (!seen.has(v.id) && v.type === 'release') {
-      seen.add(v.id);
-      list.push({ ...v, _local: false });
-    }
-  }
-
-  if (filter) {
-    const q = filter.toLowerCase();
-    list = list.filter(v => v.id.toLowerCase().includes(q));
-    // Also include snapshots when filtering
-    for (const v of state.versions) {
-      if (!seen.has(v.id) && v.type === 'snapshot' && v.id.toLowerCase().includes(q)) {
-        seen.add(v.id);
-        list.push({ ...v, _local: false });
-      }
-    }
-  }
-
-  if (!list.length) {
-    grid.innerHTML = '<div style="padding:32px;text-align:center;color:var(--ink-tertiary);grid-column:1/-1">没有匹配的版本</div>';
+  if (!locals.length && !remotes.length) {
+    grid.innerHTML = '<div class="ver-section-empty">没有匹配的版本</div>';
     return;
   }
 
-  grid.innerHTML = list.map((v, i) => {
-    const sel = v.id === state.selectedVer ? ' selected' : '';
-    const tagClass = versionTypeTagClass(v.type);
-    return `<div class="ver-card${sel}" data-id="${v.id}" data-type="${v.type}" style="animation: cardIn 0.4s ${i*0.015}s var(--ease-smooth) both">
-      <div class="ver-id">${v.id}</div>
-      <div class="ver-meta">
-        <span class="ver-type">${versionTypeLabel(v.type)}</span>
-        ${v._local ? '<span class="ver-tag local">本地</span>' : ''}
-      </div>
-    </div>`;
-  }).join('');
+  let html = '';
+  let idx = 0;
+
+  if (locals.length) {
+    html += '<div class="ver-section-title">已安装</div>';
+    html += '<div class="ver-section-cards">';
+    html += locals.map(v => buildVerCard({ ...v, local: true }, idx++)).join('');
+    html += '</div>';
+  }
+
+  if (remotes.length) {
+    html += '<div class="ver-section-title">可下载</div>';
+    html += '<div class="ver-section-cards">';
+    html += remotes.map(v => buildVerCard({ ...v, local: false }, idx++)).join('');
+    html += '</div>';
+  }
+
+  grid.innerHTML = html;
 }
 
 $('#versionList').addEventListener('click', e => {
@@ -244,23 +257,29 @@ function updateAccountUI() {
   const grid = $('#accountGrid');
   const empty = $('#accountEmpty');
   if (!state.accounts.length) {
-    grid.innerHTML = '';
+    // Remove only account cards, keep empty placeholder
+    grid.querySelectorAll('.account-card').forEach(c => c.remove());
     empty.style.display = '';
     return;
   }
   empty.style.display = 'none';
-  grid.innerHTML = state.accounts.map(a => {
+  // Remove only account cards, keep empty placeholder
+  grid.querySelectorAll('.account-card').forEach(c => c.remove());
+  // Build account cards as a fragment and append
+  state.accounts.forEach(a => {
     const ini = a.name.slice(0, 2).toUpperCase();
     const cls = a.type === 'microsoft' ? 'ms' : 'offline';
     const active = a === state.activeAcc ? ' active' : '';
-    return `<div class="account-card${active}" data-uuid="${a.uuid}">
-      <div class="acc-avatar ${cls}">${ini}</div>
+    const div = document.createElement('div');
+    div.className = `account-card${active}`;
+    div.dataset.uuid = a.uuid;
+    div.innerHTML = `<div class="acc-avatar ${cls}">${ini}</div>
       <div>
         <div class="acc-name">${a.name}</div>
         <div class="acc-type">${a.type === 'microsoft' ? 'Microsoft 正版' : '离线模式'}</div>
-      </div>
-    </div>`;
-  }).join('');
+      </div>`;
+    grid.insertBefore(div, empty);
+  });
 }
 
 $('#accountGrid').addEventListener('click', e => {
@@ -346,6 +365,7 @@ function updateSettingsUI() {
   $('#gameDir').textContent = state.settings.gameDir || '未设置';
   $('#memoryInput').value = state.settings.memory || 2048;
   $('#memorySlider').value = state.settings.memory || 2048;
+  $('#sourceSelect').value = state.settings.downloadSource || 'bmclapi';
   if (state.settings.versionIsolation != null) {
     $('#isoToggle').checked = state.settings.versionIsolation;
   }
@@ -353,6 +373,7 @@ function updateSettingsUI() {
 
 $('#btnSettingsSave').addEventListener('click', async () => {
   state.settings.memory = parseInt($('#memoryInput').value) || 2048;
+  state.settings.downloadSource = $('#sourceSelect').value;
   state.settings = await api.saveSettings(state.settings);
   updateHomeUI();
   showToast('设置已保存');

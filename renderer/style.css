@@ -329,12 +329,28 @@ html, body {
 /* Version grid */
 .version-grid {
   flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 16px 32px 20px;
+  overflow-y: auto;
+}
+.ver-section-title {
+  font-size: 11px; font-weight: 600;
+  color: var(--ink-tertiary);
+  text-transform: uppercase; letter-spacing: 0.06em;
+  padding: 10px 0 6px;
+}
+.ver-section-title:first-child { padding-top: 4px; }
+.ver-section-cards {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(138px, 1fr));
   gap: 8px;
-  padding: 20px 32px;
-  overflow-y: auto;
-  align-content: flex-start;
+  margin-bottom: 8px;
+}
+.ver-section-empty {
+  grid-column: 1 / -1;
+  padding: 40px 0; text-align: center;
+  color: var(--ink-tertiary); font-size: 14px;
 }
 .ver-card {
   padding: 14px 16px;
@@ -379,6 +395,7 @@ html, body {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(138px, 1fr));
   gap: 8px;
+  width: 100%;
 }
 .shimmer-card {
   height: 52px; border-radius: var(--r-md);
@@ -565,6 +582,27 @@ html, body {
 }
 .toggle-switch input:checked + .toggle-slider { background: var(--blue); }
 .toggle-switch input:checked + .toggle-slider::after { transform: translateX(18px); }
+
+/* Select dropdown */
+.select-row { display: flex; align-items: center; }
+.form-select {
+  width: 100%;
+  padding: 12px 14px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  font-family: var(--font); font-size: 14px; color: var(--ink);
+  box-shadow: var(--card-shadow);
+  cursor: pointer; outline: none;
+  transition: border-color 0.2s;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236e6e73' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  padding-right: 36px;
+}
+.form-select:focus { border-color: var(--blue); }
 
 .btn-save {
   align-self: flex-start;
